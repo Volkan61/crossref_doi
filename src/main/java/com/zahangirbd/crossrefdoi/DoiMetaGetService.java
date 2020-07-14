@@ -20,12 +20,14 @@ public class DoiMetaGetService {
     public DoiMetaGetService() {
     	RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
         this.restTemplate = restTemplateBuilder.build();
+        this.restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
     }
 
     @Async
     public CompletableFuture<DoiItem> findJournalDoiMeta(String doiNumber) throws InterruptedException {
-        logger.info("Looking up " + doiNumber);
+        logger.info("findJournalDoiMeta(doiNumber): doiNumber =  " + doiNumber);
         String url = String.format("https://api.crossref.org/v1/works/%s/transform/application/vnd.crossref.unixsd+xml", doiNumber);
+        logger.info("findJournalDoiMeta(doiNumber): finalUrl =  " + url);
         String doiXmlMeta = restTemplate.getForObject(url, String.class);    
         DoiItem doiItem = xmlParser.prepareDoiItemFromXmlStr(doiXmlMeta);
         return CompletableFuture.completedFuture(doiItem);
