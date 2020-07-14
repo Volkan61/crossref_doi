@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zahangirbd.crossrefdoi.DoiItem;
 import com.zahangirbd.crossrefdoi.DoiMetaGetService;
 
 @RestController
@@ -19,9 +20,9 @@ public class AsyncServiceController {
     private DoiMetaGetService doiMetaGetService;
     
     @RequestMapping("/asyncService")
-    public String greeting() {
+    public DoiItem greeting() {
     	
-    	String rslt = "";
+    	DoiItem rslt = null;
 		try {
 			rslt = doExecute();
 		} catch (Exception e) {
@@ -31,22 +32,21 @@ public class AsyncServiceController {
         return rslt;
     }
     
-    public String doExecute() throws Exception {
+    public DoiItem doExecute() throws Exception {
         // Start the clock
         long start = System.currentTimeMillis();
 
         // Kick of multiple, asynchronous lookups
-        CompletableFuture<String> doiXml = doiMetaGetService.findUser("10.5555/12345678");
+        CompletableFuture<DoiItem> doiItemReq = doiMetaGetService.findJournalDoiMeta("10.5555/12345678");
   
         // Wait until they are all done
-        CompletableFuture.allOf(doiXml).join();
+        CompletableFuture.allOf(doiItemReq).join();
 
         // Print results, including elapsed time
         logger.info("Elapsed time: " + (System.currentTimeMillis() - start));
-        String rslt = doiXml.get();
-        logger.info("--> " + rslt);
+        logger.info("--> " + doiItemReq.get());
         
-        return rslt;
+        return doiItemReq.get();
     }
     
 }

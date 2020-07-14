@@ -13,8 +13,9 @@ import java.util.concurrent.CompletableFuture;
 public class DoiMetaGetService {
 
     private static final Logger logger = LoggerFactory.getLogger(DoiMetaGetService.class);
-
+    
     private final RestTemplate restTemplate;
+    private DoiMetaXmlParser xmlParser = new DoiMetaXmlParser();
 
     public DoiMetaGetService() {
     	RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
@@ -22,11 +23,11 @@ public class DoiMetaGetService {
     }
 
     @Async
-    public CompletableFuture<String> findUser(String doiNumber) throws InterruptedException {
+    public CompletableFuture<DoiItem> findJournalDoiMeta(String doiNumber) throws InterruptedException {
         logger.info("Looking up " + doiNumber);
-        String url = "https://api.crossref.org/v1/works/10.5555/12345678/transform/application/vnd.crossref.unixsd+xml";
-        String results = restTemplate.getForObject(url, String.class);
-        return CompletableFuture.completedFuture(results);
+        String url = String.format("https://api.crossref.org/v1/works/%s/transform/application/vnd.crossref.unixsd+xml", doiNumber);
+        String doiXmlMeta = restTemplate.getForObject(url, String.class);    
+        DoiItem doiItem = xmlParser.prepareDoiItemFromXmlStr(doiXmlMeta);
+        return CompletableFuture.completedFuture(doiItem);
     }
-
 }
